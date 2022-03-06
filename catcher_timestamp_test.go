@@ -32,6 +32,14 @@ func makeAssertNoTimestamp(t *testing.T) func(ts time.Time, ok bool) {
 	}
 }
 
+type causeImpl struct {
+	val   string
+	cause error
+}
+
+func (ci *causeImpl) Cause() error  { return ci.cause }
+func (ci *causeImpl) Error() string { return fmt.Sprintf("%s: %v", ci.val, ci.cause) }
+
 func TestTimestampError(t *testing.T) {
 	t.Run("ErrorFinder", func(t *testing.T) {
 		assertHasTimestamp := makeAssertHasTimestamp(t)
@@ -59,6 +67,13 @@ func TestTimestampError(t *testing.T) {
 
 		assertNoTimestamp(
 			ErrorTimeFinder(fmt.Errorf("wrap: %w", newTimeStampError(nil))),
+		)
+
+		assertHasTimestamp(
+			ErrorTimeFinder(&causeImpl{val: "wrapouter", cause: newTimeStampError(errors.New("hello"))}),
+		)
+		assertNoTimestamp(
+			ErrorTimeFinder(&causeImpl{val: "wrapouter"}),
 		)
 
 		assertHasTimestamp(
@@ -158,8 +173,14 @@ func TestTimestampError(t *testing.T) {
 			assertNoTimestamp(
 				ErrorTimeFinder(WrapErrorTimeMessagef(nil, "earth-%s", "lings")),
 			)
+			assertNoTimestamp(
+				ErrorTimeFinder(WrapErrorTimeMessagef(nil, "earth-%q", "lings")),
+			)
 			assertHasTimestamp(
 				ErrorTimeFinder(WrapErrorTimeMessagef(errors.New("hello"), "earth-%s", "lings")),
+			)
+			assertHasTimestamp(
+				ErrorTimeFinder(WrapErrorTimeMessagef(errors.New("hello"), "earth-%q", "lings")),
 			)
 			assertHasTimestamp(
 				ErrorTimeFinder(fmt.Errorf("foo: %w", WrapErrorTimeMessagef(errors.New("hello"), "earth-%s", "lings"))),
@@ -217,4 +238,30 @@ func TestTimestampError(t *testing.T) {
 			}
 		})
 	})
+	t.Run("QuotedFormatting", func(t *testing.T) {
+		err := newTimeStampError(fmt.Errorf("hello"))
+		if strings.Contains(err.Error(), `"hello"`) {
+			t.Fatalf("error produced in wrong form: [%v]", err)
+		}
+		if !strings.Contains(fmt.Sprintf("%q", err), `"hello"`) {
+			t.Fatalf("error produced in wrong form: [%q]", err)
+		}
+	})
+	t.Run("NillError", func(t *testing.T) {
+		err := &timestampError{}
+		if err.String() != "" {
+			t.Fatal("string form of zero ts err should be empty")
+		}
+	})
+
+	t.Run("NegativeCapacity", func(t *testing.T) {
+		assertCapacityIsAtLeast(t, MakeTimestampCatcher(0), 0)
+		assertCapacityIsAtLeast(t, MakeTimestampCatcher(1), 1)
+		assertCapacityIsAtLeast(t, MakeTimestampCatcher(-1), 0)
+
+		assertCapacityIsAtLeast(t, MakeExtendedTimestampCatcher(0), 0)
+		assertCapacityIsAtLeast(t, MakeExtendedTimestampCatcher(1), 1)
+		assertCapacityIsAtLeast(t, MakeExtendedTimestampCatcher(-1), 0)
+	})
+
 }

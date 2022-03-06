@@ -38,7 +38,7 @@ func TestCatcher(t *testing.T) {
 		},
 		{
 			Name:    "ExtendedTimestamp",
-			Factory: NewExtendedCatcher,
+			Factory: NewExtendedTimestampCatcher,
 		},
 	}
 
@@ -521,6 +521,34 @@ func TestCatcher(t *testing.T) {
 				} else {
 					assertCatcherHasErrors(t, catcher, size)
 				}
+
+			},
+		},
+		{
+			Name: "MergeCatchers",
+			Case: func(t *testing.T, catcher Catcher, size int) {
+				// populate a catcher
+				nc := NewCatcher()
+				for i := 0; i < 100; i++ {
+					catcher.New("add error")
+					nc.New("second catcher")
+				}
+				assertCatcherHasErrors(t, catcher, 100)
+				catcher.Add(nc)
+				assertCatcherHasErrors(t, catcher, 200)
+
+			},
+		},
+		{
+			Name: "MergeSelfNoops",
+			Case: func(t *testing.T, catcher Catcher, size int) {
+				// populate a catcher
+				for i := 0; i < 100; i++ {
+					catcher.New("add error")
+				}
+				assertCatcherHasErrors(t, catcher, 100)
+				catcher.Add(catcher)
+				assertCatcherHasErrors(t, catcher, 100)
 
 			},
 		},
