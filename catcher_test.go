@@ -258,8 +258,8 @@ func TestCatcher(t *testing.T) {
 				assertCapacityIsAtLeast(t, catcher, 1)
 				catcher.New("one")
 				assertCatcherHasErrors(t, catcher, 1)
-				if !strings.Contains(catcher.Error(), "one") {
-					t.Fatalf("error is not propagated: [%q], %v", "one", catcher.Error())
+				if !strings.Contains(catcher.String(), "one") {
+					t.Fatalf("error is not propagated: [%q], %v", "one", catcher.String())
 				}
 			},
 		},
@@ -369,8 +369,8 @@ func TestCatcher(t *testing.T) {
 				catcher.Errorf("%s what")
 				assertCatcherHasErrors(t, catcher, 1)
 
-				if !strings.Contains(catcher.Error(), "%s what") {
-					t.Fatalf("error is not properly propagated: %v", catcher.Error())
+				if !strings.Contains(catcher.String(), "%s what") {
+					t.Fatalf("error is not properly propagated: %v", catcher.String())
 				}
 			},
 		},
@@ -398,8 +398,8 @@ func TestCatcher(t *testing.T) {
 				catcher.ErrorfWhen(true, "%s what")
 				assertCatcherHasErrors(t, catcher, 1)
 
-				if !strings.Contains(catcher.Error(), "%s what") {
-					t.Fatalf("error is not propagated: %v", catcher.Error())
+				if !strings.Contains(catcher.String(), "%s what") {
+					t.Fatalf("error is not propagated: %v", catcher.String())
 				}
 			},
 		},
@@ -410,8 +410,8 @@ func TestCatcher(t *testing.T) {
 				catcher.Errorf("%s what", "this")
 
 				assertCatcherHasErrors(t, catcher, 1)
-				if !strings.Contains(catcher.Error(), "this what") {
-					t.Fatalf("error is not propagated: %v", catcher.Error())
+				if !strings.Contains(catcher.String(), "this what") {
+					t.Fatalf("error is not propagated: %v", catcher.String())
 				}
 			},
 		},
@@ -425,8 +425,8 @@ func TestCatcher(t *testing.T) {
 
 				catcher.ErrorfWhen(true, "%s what", "this")
 				assertCatcherHasErrors(t, catcher, 1)
-				if !strings.Contains(catcher.Error(), "this what") {
-					t.Fatalf("error is not propagated: %v", catcher.Error())
+				if !strings.Contains(catcher.String(), "this what") {
+					t.Fatalf("error is not propagated: %v", catcher.String())
 				}
 			},
 		},
@@ -521,34 +521,6 @@ func TestCatcher(t *testing.T) {
 				} else {
 					assertCatcherHasErrors(t, catcher, size)
 				}
-
-			},
-		},
-		{
-			Name: "MergeCatchers",
-			Case: func(t *testing.T, catcher Catcher, size int) {
-				// populate a catcher
-				nc := NewCatcher()
-				for i := 0; i < 100; i++ {
-					catcher.New("add error")
-					nc.New("second catcher")
-				}
-				assertCatcherHasErrors(t, catcher, 100)
-				catcher.Add(nc)
-				assertCatcherHasErrors(t, catcher, 200)
-
-			},
-		},
-		{
-			Name: "MergeSelfNoops",
-			Case: func(t *testing.T, catcher Catcher, size int) {
-				// populate a catcher
-				for i := 0; i < 100; i++ {
-					catcher.New("add error")
-				}
-				assertCatcherHasErrors(t, catcher, 100)
-				catcher.Add(catcher)
-				assertCatcherHasErrors(t, catcher, 100)
 
 			},
 		},

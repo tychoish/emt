@@ -48,10 +48,6 @@ type Catcher interface {
 	Len() int
 	Errors() []error
 
-	// Error allows the catcher to behave as an error, and should
-	// be equivalent to Catcher.Resolve().Error()
-	Error() string
-
 	// String returns a string that concatenates the values
 	// returned by `.Error()` on all of the constituent errors.
 	String() string
@@ -124,16 +120,6 @@ func (c *baseCatcher) Add(err error) {
 }
 
 func (c *baseCatcher) safeAdd(err error) {
-	if catcher, ok := err.(Catcher); ok {
-		if catcher == c {
-			return
-		}
-		if catcher.HasErrors() {
-			c.errs = append(c.errs, catcher.Errors()...)
-		}
-		return
-	}
-
 	if c.maxSize <= 0 || c.maxSize > len(c.errs) {
 		c.errs = append(c.errs, err)
 	} else {
@@ -271,8 +257,6 @@ func (c *baseCatcher) Resolve() error {
 
 	return errors.New(c.String())
 }
-
-func (c *baseCatcher) Error() string { return c.Resolve().Error() }
 
 ////////////////////////////////////////////////////////////////////////
 //

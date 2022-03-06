@@ -187,13 +187,6 @@ func (c *timeAnnotatingCatcher) Add(err error) {
 func (c *timeAnnotatingCatcher) safeAdd(err error) {
 	switch e := err.(type) {
 	case nil:
-	case Catcher:
-		if e == c {
-			return
-		}
-		for _, te := range e.Errors() {
-			c.safeAdd(te)
-		}
 	case *timestampError:
 		if c.maxSize <= 0 || c.maxSize > len(c.errs) {
 			c.errs = append(c.errs, e)
@@ -349,5 +342,3 @@ func (c *timeAnnotatingCatcher) Resolve() error {
 
 	return errors.New(c.String())
 }
-
-func (c *timeAnnotatingCatcher) Error() string { return c.Resolve().Error() }
