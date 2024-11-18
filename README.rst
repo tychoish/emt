@@ -4,6 +4,14 @@
 
 ``emt`` is small a Golang library for managing and aggregating errors. 
 
+``emt`` **has been deprecated infavor of equivalent functionality in the `tychoish/fun <https:://github.com/tychoish/fun>`_ pacakge.
+In particular, please see:**
+
+- `ers <https://pkg.go.dev/github.com/tychoish/fun/ers>`_ 
+- `erc <https://pkg.go.dev/github.com/tychoish/fun/erc>`_
+
+These packages have minimal dependencies, simple implementations, are more compatible with contemporary Go idioms, and are typically more performant.
+
 Overview
 --------
 
